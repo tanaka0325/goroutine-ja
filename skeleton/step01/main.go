@@ -91,9 +91,9 @@ func main() {
 
 	// limits
 	const (
-		LimitOfBoiledWater  = 600
-		LimitOfGroundBeans  = 20
-		LimitOfBrewedCoffee = 20
+		LimitOfBoiledWater  = 600 * MilliLiterWater
+		LimitOfGroundBeans  = 20 * GramBeans
+		LimitOfBrewedCoffee = 20 * CupsCoffee
 	)
 
 	// 材料
@@ -123,12 +123,10 @@ func main() {
 	var coffee Coffee
 	cups := LimitOfBrewedCoffee * CupsCoffee
 	for hotWater >= cups.HotWater() && groundBeans >= cups.GroundBeans() {
-		hw := (LimitOfBrewedCoffee * CupsCoffee).HotWater()
-		gb := (LimitOfGroundBeans * CupsCoffee).GroundBeans()
+		hotWater -= cups.HotWater()
+		groundBeans -= cups.GroundBeans()
 
-		hotWater -= hw
-		groundBeans -= gb
-		coffee += brew(hw, gb)
+		coffee += brew(cups.HotWater(), cups.GroundBeans())
 	}
 
 	fmt.Println(coffee)
