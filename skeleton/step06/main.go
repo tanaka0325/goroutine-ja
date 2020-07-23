@@ -102,8 +102,7 @@ func _main() {
 	fmt.Println(water)
 	fmt.Println(beans)
 
-	// TODO: taskCtxをベースにしてerrgroup.WithContextで
-	// errgroup.Groupとコンテキストを作成する。
+	eg, ctx := errgroup.WithContext(taskCtx)
 
 	// お湯を沸かす
 	var hotWater HotWater
@@ -134,8 +133,12 @@ func _main() {
 	for beans > 0 {
 		beans -= 20 * GramBeans
 		eg.Go(func() error {
-			// TODO: キャンセルを検出する
-
+			select {
+			case <-ctx.Done():
+				trace.Log(ctx, "grind error", ctx.Err().Error())
+				return ctx.Err()
+			default:
+			}
 			gb, err := grind(ctx, 20*GramBeans)
 			if err != nil {
 				return err
