@@ -106,9 +106,10 @@ func _main() {
 	var hwmu sync.Mutex
 	for water > 0 {
 		water -= 600 * MilliLiterWater
-		// TODO: wgに1を加える
+		wg.Add(1)
 		go func() {
-			// TODO: deferでwg.Doneを仕掛ける
+			defer wg.Done()
+
 			hw := boil(ctx, 600*MilliLiterWater)
 			hwmu.Lock()
 			defer hwmu.Unlock()
@@ -125,8 +126,8 @@ func _main() {
 		go func() {
 			defer wg.Done()
 			gb := grind(ctx, 20*GramBeans)
-			// TODO: gbmuでロックを取る
-			// TODO: gbmuのロックをdeferで解除する
+			gbmu.Lock()
+			defer gbmu.Unlock()
 			groundBeans += gb
 		}()
 	}
@@ -143,9 +144,9 @@ func _main() {
 	for hotWater >= cups.HotWater() && groundBeans >= cups.GroundBeans() {
 		hotWater -= cups.HotWater()
 		groundBeans -= cups.GroundBeans()
-		// TODO: wg2に1加える
+		wg2.Add(1)
 		go func() {
-			// TODO: wg2のDoneをdeferで呼ぶ
+			defer wg2.Done()
 			cf := brew(ctx, cups.HotWater(), cups.GroundBeans())
 			cfmu.Lock()
 			defer cfmu.Unlock()
@@ -153,7 +154,7 @@ func _main() {
 		}()
 	}
 
-	// TODO: wg2を使って待ち合わせ
+	wg2.Wait()
 	fmt.Println(coffee)
 }
 
