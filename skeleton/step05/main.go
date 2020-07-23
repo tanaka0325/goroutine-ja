@@ -109,16 +109,16 @@ func _main() {
 	var hwmu sync.Mutex
 	for water > 0 {
 		water -= 600 * MilliLiterWater
-		// TODO: egのGoメソッドで関数として呼び出す
-		hw, err := boil(ctx, 600*MilliLiterWater)
-		if err != nil {
-			// TODO: エラーを返す
-		}
-		hwmu.Lock()
-		defer hwmu.Unlock()
-		hotWater += hw
-		// TODO: エラーが起きなかった場合はnilを返す
-		// ここまで関数にする
+		eg.Go(func() error {
+			hw, err := boil(ctx, 600*MilliLiterWater)
+			if err != nil {
+				return err
+			}
+			hwmu.Lock()
+			defer hwmu.Unlock()
+			hotWater += hw
+			return nil
+		})
 	}
 
 	// 豆を挽く
@@ -165,10 +165,10 @@ func _main() {
 		})
 	}
 
-	// TODO: eg2のWaitで待ち合わせを行う。
-	// エラーが発生した場合はエラーをos.Stderrに出力する。
-	// returnで_main関数を終了する。
-
+	if err := eg2.Wait(); err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		return
+	}
 	fmt.Println(coffee)
 }
 
